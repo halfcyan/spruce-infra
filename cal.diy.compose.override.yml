@@ -1,0 +1,8 @@
+services:
+  calcom:
+    networks:
+      - npm
+
+networks:
+  npm:
+    external: true

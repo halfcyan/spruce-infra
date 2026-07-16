@@ -8,6 +8,7 @@ This repository tracks service definitions and templates, not live runtime state
 
 - `nginx-proxy-manager/` - public reverse proxy and Let's Encrypt management.
 - `willowidk.dev/` - static site Nginx container plus GitHub webhook updater.
+- `cal.diy/` - Git submodule for the upstream Cal.diy Docker stack.
 
 ## Host assumptions
 
@@ -60,7 +61,16 @@ cp .env.example .env
 chmod 600 .env
 # edit .env and set WEBHOOK_SECRET
 podman-compose up -d --build
+
+cd ../cal.diy
+cp .env.example .env
+chmod 600 .env
+# edit .env and set NEXT_PUBLIC_WEBAPP_URL, NEXTAUTH_URL, NEXTAUTH_SECRET,
+# CALENDSO_ENCRYPTION_KEY, and database settings as needed
+podman-compose -f docker-compose.yml -f ../cal.diy.compose.override.yml up -d database redis calcom
 ```
+
+See `docs/cal-diy.md` for Cal.diy submodule setup and update notes.
 
 ## Nginx Proxy Manager hosts
 
@@ -82,6 +92,15 @@ Forward Hostname / IP: willowidk-webhook
 Forward Port: 9000
 ```
 
+cal.diy website:
+
+```txt
+Domain: cal.diy
+Scheme: http
+Forward Hostname / IP: calcom
+Forward Port: 3000
+```
+
 ## Secrets and runtime state
 
 Do not commit:
@@ -90,6 +109,7 @@ Do not commit:
 - Nginx Proxy Manager `data/`
 - Nginx Proxy Manager `letsencrypt/`
 - app `site/` checkouts
+- Cal.diy `.env` runtime configuration
 - private keys or cert material
 
 Commit safe examples/templates instead, such as `.env.example` and `hooks.json.template`.
