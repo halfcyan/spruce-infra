@@ -13,6 +13,8 @@
 **/cache/
 **/logs/
 **/tmp/
+/voidauth/config/
+/voidauth/db/
 
 # Local app checkouts mounted into containers
 **/site/

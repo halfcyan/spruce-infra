@@ -7,6 +7,7 @@ This repository tracks service definitions and templates, not live runtime state
 ## Services
 
 - `nginx-proxy-manager/` - public reverse proxy and Let's Encrypt management.
+- `voidauth/` - VoidAuth SSO provider.
 - `portainer/` - Portainer Business Edition for container management.
 - `willowidk.dev/` - static site Nginx container plus GitHub webhook updater.
 - `cal.diy/` - Git submodule for the upstream Cal.diy Docker stack.
@@ -57,6 +58,12 @@ podman-compose up -d
 Then start app services:
 
 ```sh
+cd ../voidauth
+cp .env.example .env
+chmod 600 .env
+# edit .env and set APP_URL, STORAGE_KEY, and DB_PASSWORD
+podman-compose up -d
+
 cd ../portainer
 podman-compose up -d
 
@@ -77,6 +84,15 @@ podman-compose -f docker-compose.yml -f ../cal.diy.compose.override.yml up -d da
 See `docs/cal-diy.md` for Cal.diy submodule setup and update notes.
 
 ## Nginx Proxy Manager hosts
+
+VoidAuth:
+
+```txt
+Domain: auth.willowidk.dev
+Scheme: http
+Forward Hostname / IP: voidauth
+Forward Port: 3000
+```
 
 Website:
 
@@ -121,6 +137,7 @@ Do not commit:
 - `.env`
 - Nginx Proxy Manager `data/`
 - Nginx Proxy Manager `letsencrypt/`
+- VoidAuth `config/` and `db/`
 - Portainer `portainer_data` volume
 - app `site/` checkouts
 - Cal.diy `.env` runtime configuration
@@ -134,6 +151,7 @@ Git is not a backup for runtime state. Back up at least:
 
 - `nginx-proxy-manager/data/`
 - `nginx-proxy-manager/letsencrypt/`
+- VoidAuth `voidauth/config/` and `voidauth/db/`
 - Portainer `portainer_data` volume
 
 separately with a tool like `restic`, `borg`, or your VPS provider snapshots.

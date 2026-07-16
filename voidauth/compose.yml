@@ -1,0 +1,40 @@
+name: voidauth
+
+services:
+  voidauth:
+    image: docker.io/voidauth/voidauth:latest
+    container_name: voidauth
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./config:/app/config:Z
+    depends_on:
+      voidauth-db:
+        condition: service_healthy
+    networks:
+      - default
+      - npm
+
+  voidauth-db:
+    image: docker.io/library/postgres:18
+    container_name: voidauth-db
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./db:/var/lib/postgresql/18/docker:Z
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+networks:
+  default:
+  npm:
+    external: true
