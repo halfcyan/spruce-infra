@@ -1,4 +1,10 @@
 services:
+  database:
+    image: docker.io/library/postgres:latest
+
+  redis:
+    image: docker.io/library/redis:latest
+
   calcom:
     networks:
       - npm

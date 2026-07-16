@@ -56,7 +56,7 @@ podman-compose -f docker-compose.yml -f ../cal.diy.compose.override.yml up -d da
 
 Starting only `database redis calcom` avoids exposing upstream optional services such as Prisma Studio and the API service on host ports that may conflict with Nginx Proxy Manager. Start those optional services only if you intentionally need them.
 
-The override adds only the `npm` network to the upstream `calcom` service. Keep application and database changes in `cal.diy/.env` or upstream-supported compose overrides; do not edit generated secrets into Git.
+The override attaches the upstream `calcom` service to the `npm` network and qualifies upstream short image names for Podman, such as `postgres` and `redis`, as `docker.io/library/...`. Keep application and database changes in `cal.diy/.env` or upstream-supported compose overrides; do not edit generated secrets into Git.
 
 ## Nginx Proxy Manager
 
