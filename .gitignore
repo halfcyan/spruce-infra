@@ -1,0 +1,22 @@
+# Secrets
+**/.env
+**/*.key
+**/*.pem
+**/*.p12
+**/*.pfx
+
+# Runtime state / volumes
+**/data/
+**/letsencrypt/
+**/volumes/
+**/storage/
+**/cache/
+**/logs/
+**/tmp/
+
+# Local app checkouts mounted into containers
+**/site/
+
+# OS/editor noise
+.DS_Store
+*.swp

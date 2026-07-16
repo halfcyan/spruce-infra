@@ -1,0 +1,32 @@
+name: willowidk-dev
+
+services:
+  webhook:
+    build:
+      context: ./webhook
+      dockerfile: Containerfile
+    image: webhook-custom:latest
+    container_name: willowidk-webhook
+    volumes:
+      - ./site:/var/www:z
+      - ./rebuild.sh:/opt/rebuild.sh:ro,z
+      - ./webhook/hooks.json.template:/etc/webhook/hooks.json.template:ro,z
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - npm
+
+  nginx:
+    image: docker.io/library/nginx:alpine
+    container_name: willowidk-nginx
+    volumes:
+      - ./site:/usr/share/nginx/html:ro,z
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro,z
+    restart: always
+    networks:
+      - npm
+
+networks:
+  npm:
+    external: true

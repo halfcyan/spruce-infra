@@ -1,0 +1,17 @@
+FROM docker.io/library/golang:bookworm AS builder
+
+RUN go install github.com/adnanh/webhook@latest
+
+FROM docker.io/library/debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git ca-certificates gettext-base \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /go/bin/webhook /usr/local/bin/webhook
+
+WORKDIR /opt/webhook
+
+EXPOSE 9000
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["envsubst < /etc/webhook/hooks.json.template > /tmp/hooks.json && exec /usr/local/bin/webhook -hooks /tmp/hooks.json -verbose -port 9000"]
