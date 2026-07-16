@@ -7,6 +7,7 @@ This repository tracks service definitions and templates, not live runtime state
 ## Services
 
 - `nginx-proxy-manager/` - public reverse proxy and Let's Encrypt management.
+- `portainer/` - Portainer Business Edition for container management.
 - `willowidk.dev/` - static site Nginx container plus GitHub webhook updater.
 - `cal.diy/` - Git submodule for the upstream Cal.diy Docker stack.
 
@@ -56,6 +57,9 @@ podman-compose up -d
 Then start app services:
 
 ```sh
+cd ../portainer
+podman-compose up -d
+
 cd ../willowidk.dev
 cp .env.example .env
 chmod 600 .env
@@ -101,6 +105,15 @@ Forward Hostname / IP: calcom
 Forward Port: 3000
 ```
 
+Portainer:
+
+```txt
+Domain: portainer.willowidk.dev
+Scheme: https
+Forward Hostname / IP: portainer
+Forward Port: 9443
+```
+
 ## Secrets and runtime state
 
 Do not commit:
@@ -108,6 +121,7 @@ Do not commit:
 - `.env`
 - Nginx Proxy Manager `data/`
 - Nginx Proxy Manager `letsencrypt/`
+- Portainer `portainer_data` volume
 - app `site/` checkouts
 - Cal.diy `.env` runtime configuration
 - private keys or cert material
@@ -120,5 +134,6 @@ Git is not a backup for runtime state. Back up at least:
 
 - `nginx-proxy-manager/data/`
 - `nginx-proxy-manager/letsencrypt/`
+- Portainer `portainer_data` volume
 
 separately with a tool like `restic`, `borg`, or your VPS provider snapshots.

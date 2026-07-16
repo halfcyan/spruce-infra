@@ -1,0 +1,23 @@
+name: portainer
+
+services:
+  app:
+    image: docker.io/portainer/portainer-ee:lts
+    container_name: portainer
+    restart: always
+    privileged: true
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+    volumes:
+      - /run/podman/podman.sock:/var/run/docker.sock
+      - portainer_data:/data:Z
+    networks:
+      - npm
+
+volumes:
+  portainer_data:
+
+networks:
+  npm:
+    external: true
