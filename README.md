@@ -154,4 +154,4 @@ Git is not a backup for runtime state. Back up at least:
 - VoidAuth `voidauth/config/` and `voidauth/db/`
 - Portainer `portainer_data` volume
 
-separately with a tool like `restic`, `borg`, or your VPS provider snapshots.
+separately with a tool like `restic`, `borg`, or VPS snapshots.
