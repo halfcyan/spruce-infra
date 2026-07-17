@@ -46,7 +46,7 @@ CALENDSO_ENCRYPTION_KEY=<openssl rand -base64 24>
 The upstream Docker Compose stack provides a local Postgres database by default. For the in-stack database, make sure the app container uses the Compose service name, not a host-mapped port:
 
 ```txt
-DATABASE_HOST=database
+DATABASE_HOST=database:5432
 DATABASE_URL=postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@database:5432/<POSTGRES_DB>
 DATABASE_DIRECT_URL=postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@database:5432/<POSTGRES_DB>
 ```
@@ -64,7 +64,7 @@ podman-compose -f docker-compose.yml -f ../cal.diy.compose.override.yml up -d da
 
 Starting only `database redis calcom` avoids exposing upstream optional services such as Prisma Studio and the API service on host ports that may conflict with Nginx Proxy Manager. Start those optional services only if you intentionally need them.
 
-The override attaches the upstream `calcom` service to the `npm` network, configures Cal.diy services to reach Postgres at `database:5432`, and qualifies upstream short image names for Podman, such as `postgres` and `redis`, as `docker.io/library/...`. Keep application and database changes in `cal.diy/.env` or upstream-supported compose overrides; do not edit generated secrets into Git.
+The override attaches the upstream `calcom` service to the `npm` network, configures Cal.diy services to reach Postgres at `database:5432`, and qualifies upstream short image names for Podman, such as `postgres` and `redis`, as `docker.io/library/...`. `DATABASE_HOST` intentionally includes the port because Cal.diy's startup script passes it to `scripts/wait-for-it.sh`, which requires `host:port` or a URL. Keep application and database changes in `cal.diy/.env` or upstream-supported compose overrides; do not edit generated secrets into Git.
 
 If Cal.diy was already started with `DATABASE_URL` pointing at `localhost:5450`, fix `cal.diy/.env` and recreate the app container so it receives the new environment:
 

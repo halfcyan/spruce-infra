@@ -11,7 +11,7 @@ services:
 
   calcom:
     environment:
-      DATABASE_HOST: database
+      DATABASE_HOST: database:5432
       DATABASE_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
       DATABASE_DIRECT_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
     networks:
@@ -19,7 +19,7 @@ services:
 
   calcom-api:
     environment:
-      DATABASE_HOST: database
+      DATABASE_HOST: database:5432
       DATABASE_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
       DATABASE_READ_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
       DATABASE_WRITE_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
@@ -27,7 +27,7 @@ services:
 
   studio:
     environment:
-      DATABASE_HOST: database
+      DATABASE_HOST: database:5432
       DATABASE_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
       DATABASE_DIRECT_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
 
