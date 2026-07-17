@@ -1,13 +1,35 @@
 services:
   database:
     image: docker.io/library/postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-unicorn_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-magical_password}
+      POSTGRES_DB: ${POSTGRES_DB:-calendso}
 
   redis:
     image: docker.io/library/redis:latest
 
   calcom:
+    environment:
+      DATABASE_HOST: database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
+      DATABASE_DIRECT_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
     networks:
       - npm
+
+  calcom-api:
+    environment:
+      DATABASE_HOST: database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
+      DATABASE_READ_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
+      DATABASE_WRITE_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
+      DATABASE_DIRECT_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
+
+  studio:
+    environment:
+      DATABASE_HOST: database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
+      DATABASE_DIRECT_URL: postgresql://${POSTGRES_USER:-unicorn_user}:${POSTGRES_PASSWORD:-magical_password}@database:5432/${POSTGRES_DB:-calendso}
 
 networks:
   npm:
