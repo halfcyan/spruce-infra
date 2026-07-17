@@ -7,10 +7,8 @@ Static site service plus GitHub webhook updater.
 `site/` is intentionally ignored by Git and should be a separate clone of the website repository:
 
 ```sh
-git clone git@github.com:YOUR_USER/willowidk.dev.git site
+git clone git@github.com:halfcyan/willowidk.dev.git site
 ```
-
-If the site repo is private, the webhook container needs unattended Git credentials. SSH agent forwarding from an interactive login will not be available to webhook-triggered pulls.
 
 ## Setup
 
