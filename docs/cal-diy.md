@@ -13,7 +13,7 @@ This repo keeps Spruce-specific instructions and compose overrides outside the s
 When cloning this infra repo from scratch, initialize submodules shallowly:
 
 ```sh
-git clone --recurse-submodules --shallow-submodules <spruce-infra-repo-url>
+git clone --recurse-submodules --shallow-submodules git@github.com:halfcyan/spruce-infra
 ```
 
 If the repo is already cloned:
