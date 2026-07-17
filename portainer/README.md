@@ -10,23 +10,36 @@ podman run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always --priv
 
 ## Prerequisites
 
-The Podman API socket must be enabled. This compose file follows Portainer's example and mounts the system socket:
-
-```txt
-/run/podman/podman.sock
-```
-
-For the system socket, enable it with:
+The Podman API socket must be enabled for the user running Portainer:
 
 ```sh
-sudo systemctl enable --now podman.socket
+systemctl --user enable --now podman.socket
 ```
 
-For rootless Podman, the socket is commonly under `/run/user/<uid>/podman/podman.sock` instead. If using the rootless socket, update the socket bind mount in `compose.yml` before starting Portainer.
+Create `.env` and set the rootless socket path:
+
+```sh
+cp .env.example .env
+chmod 600 .env
+uid=$(id -u)
+sed -i "s|<uid>|$uid|" .env
+```
+
+The resulting value should look like:
+
+```txt
+PODMAN_SOCKET_PATH=/run/user/1000/podman/podman.sock
+```
+
+Portainer's upstream Podman example mounts the system socket at `/run/podman/podman.sock`, but this repo runs rootless Podman. Using the system socket from a rootless compose stack can fail with `statfs /run/podman/podman.sock: permission denied`.
 
 ## Start
 
 ```sh
+cp .env.example .env
+chmod 600 .env
+uid=$(id -u)
+sed -i "s|<uid>|$uid|" .env
 podman-compose up -d
 ```
 

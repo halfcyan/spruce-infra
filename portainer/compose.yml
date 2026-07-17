@@ -9,8 +9,10 @@ services:
     ports:
       - "8000:8000"
       - "9443:9443"
+    env_file:
+      - .env
     volumes:
-      - /run/podman/podman.sock:/var/run/docker.sock
+      - ${PODMAN_SOCKET_PATH}:/var/run/docker.sock
       - portainer_data:/data:Z
     networks:
       - npm
