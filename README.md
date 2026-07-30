@@ -131,18 +131,18 @@ Forward Hostname / IP: willowidk-webhook
 Forward Port: 9000
 ```
 
-Panel database (optional public exposure):
+Panel database:
 
 ```txt
-Domain: panels.<your-domain>
+Domain: panels.willowidk.dev
 Scheme: http
 Forward Hostname / IP: panel-modeler-panels
 Forward Port: 80
 ```
 
-The panel database is available internally as `http://panel-modeler-panels/panels.json`.
-See `panel-modeler/README.md` before exposing it publicly; HTTPS and access controls are
-recommended for a public proxy host.
+The public database URL is `https://panels.willowidk.dev/panels.json`; internally it is
+available as `http://panel-modeler-panels/panels.json`. See `panel-modeler/README.md`
+for the service details.
 
 cal.diy website:
 

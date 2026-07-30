@@ -19,13 +19,19 @@ The internal service address is:
 http://panel-modeler-panels/panels.json
 ```
 
-In Nginx Proxy Manager, an optional public proxy host can use:
+In Nginx Proxy Manager, configure this public proxy host:
 
 ```text
-Domain: panels.<your-domain>
+Domain: panels.willowidk.dev
 Scheme: http
 Forward Hostname / IP: panel-modeler-panels
 Forward Port: 80
+```
+
+The public database URL is:
+
+```text
+https://panels.willowidk.dev/panels.json
 ```
 
 Prefer keeping this service internal unless remote clients need the database. If it
