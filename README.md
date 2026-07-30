@@ -87,6 +87,21 @@ podman-compose -f docker-compose.yml -f ../cal.diy.compose.override.yml up -d da
 
 See `docs/cal-diy.md` for Cal.diy submodule setup and update notes.
 
+## Mirroring to GitHub
+
+Tangled is the source of truth for this repository. The pipeline at
+[`.tangled/workflows/mirror.yml`](.tangled/workflows/mirror.yml) mirrors every branch
+and tag push to GitHub.
+
+Configure these repository secrets in Tangled:
+
+- `GITHUB_TOKEN`: a GitHub fine-grained personal access token with **Contents: Read and write** permission on the destination repository
+- `GITHUB_REPOSITORY`: the GitHub destination in `owner/repository` form
+
+The workflow uses `git push --mirror`, so the GitHub repository should be dedicated to
+this mirror and should not receive independent changes. The destination must already
+exist on GitHub.
+
 ## Nginx Proxy Manager hosts
 
 VoidAuth:
