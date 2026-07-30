@@ -10,6 +10,7 @@ This repository tracks service definitions and templates, not live runtime state
 - `voidauth/` - VoidAuth SSO provider.
 - `portainer/` - Portainer Business Edition for container management.
 - `willowidk.dev/` - static site Nginx container plus GitHub webhook updater.
+- `panel-modeler/` - internal static panel database for the panel-modeler desktop application.
 - `cal.diy/` - Git submodule for the upstream Cal.diy Docker stack.
 
 ## Host assumptions
@@ -73,6 +74,9 @@ chmod 600 .env
 # edit .env and set WEBHOOK_SECRET
 podman-compose up -d --build
 
+cd ../panel-modeler
+podman-compose up -d
+
 cd ../cal.diy
 cp .env.example .env
 chmod 600 .env
@@ -111,6 +115,19 @@ Scheme: http
 Forward Hostname / IP: willowidk-webhook
 Forward Port: 9000
 ```
+
+Panel database (optional public exposure):
+
+```txt
+Domain: panels.<your-domain>
+Scheme: http
+Forward Hostname / IP: panel-modeler-panels
+Forward Port: 80
+```
+
+The panel database is available internally as `http://panel-modeler-panels/panels.json`.
+See `panel-modeler/README.md` before exposing it publicly; HTTPS and access controls are
+recommended for a public proxy host.
 
 cal.diy website:
 

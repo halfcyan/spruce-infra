@@ -1,0 +1,16 @@
+name: panel-modeler
+
+services:
+  panels:
+    image: docker.io/library/nginx:alpine
+    container_name: panel-modeler-panels
+    volumes:
+      - ./data:/usr/share/nginx/html:ro,z
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro,z
+    restart: always
+    networks:
+      - npm
+
+networks:
+  npm:
+    external: true
