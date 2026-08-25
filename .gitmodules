@@ -1,4 +1,0 @@
-[submodule "cal.diy"]
-	path = cal.diy
-	url = https://github.com/calcom/cal.diy.git
-	shallow = true
