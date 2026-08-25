@@ -14,6 +14,7 @@ prepare_env() {
 prepare_env "voidauth"
 prepare_env "willowidk.dev"
 prepare_env "portainer"
+prepare_env "calnode"
 
 if [ -f "portainer/.env" ]; then
     uid=$(id -u)
@@ -22,7 +23,7 @@ fi
 
 trap 'for env in $cleanup_envs; do rm -f "$env"; done' EXIT
 
-for compose in nginx-proxy-manager/compose.yml voidauth/compose.yml willowidk.dev/compose.yml portainer/compose.yml; do
+for compose in nginx-proxy-manager/compose.yml voidauth/compose.yml willowidk.dev/compose.yml portainer/compose.yml calnode/compose.yml; do
     dir=$(dirname "$compose")
     echo "Validating $compose"
     (cd "$dir" && podman-compose config >/dev/null)

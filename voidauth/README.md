@@ -65,7 +65,7 @@ Request a Let's Encrypt certificate and force SSL.
 Prefer native OIDC integration when the app supports it:
 
 - Portainer Business Edition: configure OIDC/OAuth against VoidAuth.
-- Cal.diy: use native OIDC only if your Cal.diy deployment supports it; avoid blanket proxy auth on public booking pages unless you intentionally want them private.
+- CalNode: it manages its own authentication and calendar OAuth callbacks; avoid blanket proxy auth on public booking pages unless you intentionally want them private.
 - Nginx Proxy Manager admin UI: NPM does not have first-class OIDC for its own admin login. Keep the admin UI private with Tailscale/firewalling, or put a separate auth-capable proxy in front of it.
 
 VoidAuth also supports Proxy ForwardAuth for apps that cannot speak OIDC directly, but Nginx Proxy Manager may require custom Nginx config snippets to use that safely.

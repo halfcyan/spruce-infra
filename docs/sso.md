@@ -48,9 +48,9 @@ Nginx Proxy Manager does not provide native OIDC for its admin UI. Recommended o
 
 Avoid making NPM depend on itself for admin authentication unless you are comfortable with the bootstrap/recovery risks.
 
-### Cal.diy
+### CalNode
 
-Use Cal.diy's native auth/OIDC support only if the deployment supports it. Be careful with proxy auth in front of `cal.diy`, because public booking pages and OAuth/calendar callbacks may need unauthenticated access.
+CalNode provides its own authentication and Google/Microsoft OAuth calendar callbacks. Avoid blanket proxy auth in front of `calnode`, because public booking pages and calendar callbacks need unauthenticated access.
 
 ### Static sites
 

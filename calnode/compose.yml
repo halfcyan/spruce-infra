@@ -1,0 +1,17 @@
+name: calnode
+
+services:
+  calnode:
+    image: ghcr.io/calnode/calnode:latest
+    container_name: calnode
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data:Z
+    networks:
+      - npm
+
+networks:
+  npm:
+    external: true

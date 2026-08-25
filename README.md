@@ -11,7 +11,7 @@ This repository tracks service definitions and templates, not live runtime state
 - `portainer/` - Portainer Business Edition for container management.
 - `willowidk.dev/` - static site Nginx container plus GitHub webhook updater.
 - `panel-modeler/` - internal static panel database for the panel-modeler desktop application.
-- `cal.diy/` - Git submodule for the upstream Cal.diy Docker stack.
+- `calnode/` - self-hosted CalNode booking service with SQLite and Mailcow SMTP.
 
 ## Host assumptions
 
@@ -77,15 +77,15 @@ podman-compose up -d --build
 cd ../panel-modeler
 podman-compose up -d
 
-cd ../cal.diy
+cd ../calnode
 cp .env.example .env
 chmod 600 .env
-# edit .env and set NEXT_PUBLIC_WEBAPP_URL, NEXTAUTH_URL, NEXTAUTH_SECRET,
-# CALENDSO_ENCRYPTION_KEY, and database settings as needed
-podman-compose -f docker-compose.yml -f ../cal.diy.compose.override.yml up -d database redis calcom
+# edit .env and set BASE_URL, CALNODE_ENCRYPTION_KEY,
+# CALNODE_RECOVERY_SECRET, and the Mailcow SMTP settings
+podman-compose up -d
 ```
 
-See `docs/cal-diy.md` for Cal.diy submodule setup and update notes.
+See `calnode/README.md` for CalNode, Mailcow SMTP, backup, and update notes.
 
 ## Mirroring to GitHub
 
@@ -144,12 +144,12 @@ The public database URL is `https://panels.willowidk.dev/panels.json`; internall
 available as `http://panel-modeler-panels/panels.json`. See `panel-modeler/README.md`
 for the service details.
 
-cal.diy website:
+CalNode booking site:
 
 ```txt
-Domain: cal.diy
+Domain: <the hostname in calnode/.env BASE_URL>
 Scheme: http
-Forward Hostname / IP: calcom
+Forward Hostname / IP: calnode
 Forward Port: 3000
 ```
 
@@ -172,7 +172,7 @@ Do not commit:
 - VoidAuth `config/` and `db/`
 - Portainer `portainer_data` volume
 - app `site/` checkouts
-- Cal.diy `.env` runtime configuration
+- CalNode `.env` runtime configuration and `calnode/data/` SQLite database
 - private keys or cert material
 
 Commit safe examples/templates instead, such as `.env.example` and `hooks.json.template`.
@@ -185,5 +185,6 @@ Git is not a backup for runtime state. Back up at least:
 - `nginx-proxy-manager/letsencrypt/`
 - VoidAuth `voidauth/config/` and `voidauth/db/`
 - Portainer `portainer_data` volume
+- CalNode `calnode/data/` SQLite database (or configure its Litestream replica)
 
 separately with a tool like `restic`, `borg`, or VPS snapshots.
