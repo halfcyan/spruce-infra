@@ -3,14 +3,11 @@ when:
     branch: ["*"]
   - event: ["push"]
     tag: ["*"]
-engine: "nixery"
-clone:
-  depth: 0
-  submodules: false
+engine: microvm
+image: nixos
 dependencies:
-  nixpkgs:
-    - tailscale
-    - 1password-cli
+  - tailscale
+  - _1password-cli
 
 steps:
   - name: "Log into Tailscale"
