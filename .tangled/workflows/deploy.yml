@@ -11,7 +11,7 @@ dependencies:
   nixpkgs:
     - tailscale
     - mise
-    - 1password
+    - _1password-cli
 
 steps:
   - name: "Log into Tailscale"
