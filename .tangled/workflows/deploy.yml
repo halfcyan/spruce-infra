@@ -66,7 +66,7 @@ steps:
       echo "Authenticating this runner with Tailscale"
       if ! tailscale --socket="$TS_SOCKET" login --timeout=2m \
         --client-id "$TS_OAUTH_CLIENT_ID" \
-        --client-secret "$TS_OAUTH_SECRET" \\
+        --client-secret "$TS_OAUTH_SECRET" \
         --advertise-tags "$TS_ADVERTISE_TAGS"; then
         echo "Tailscale login failed; daemon log follows:" >&2
         cat "$TS_LOG" >&2
