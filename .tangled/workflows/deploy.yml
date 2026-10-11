@@ -13,6 +13,7 @@ steps:
 
       : "${TS_OAUTH_CLIENT_ID:?Set the Tailscale OAuth client ID as a Tangled secret named TS_OAUTH_CLIENT_ID}"
       : "${TS_OAUTH_SECRET:?Set the Tailscale OAuth secret as a Tangled secret named TS_OAUTH_SECRET}"
+      : "${TS_ADVERTISE_TAGS:?Set TS_ADVERTISE_TAGS to a tag allowed for the Tailscale OAuth client, such as tag:deploy}"
       : "${OP_SERVICE_ACCOUNT_TOKEN:?Set the 1Password service account token as a Tangled secret named OP_SERVICE_ACCOUNT_TOKEN}"
       : "${OP_SSH_KEY_REF:?Set OP_SSH_KEY_REF to the op:// reference for the spruce SSH private key in 1Password}"
       : "${VOIDAUTH_ENV:?Set VOIDAUTH_ENV to the complete voidauth/.env contents as a Tangled secret}"
@@ -65,7 +66,8 @@ steps:
       echo "Authenticating this runner with Tailscale"
       if ! tailscale --socket="$TS_SOCKET" login --timeout=2m \
         --client-id "$TS_OAUTH_CLIENT_ID" \
-        --client-secret "$TS_OAUTH_SECRET"; then
+        --client-secret "$TS_OAUTH_SECRET" \\
+        --advertise-tags "$TS_ADVERTISE_TAGS"; then
         echo "Tailscale login failed; daemon log follows:" >&2
         cat "$TS_LOG" >&2
         exit 1
@@ -81,7 +83,7 @@ steps:
         exit 1
       fi
       echo "Tailscale is connected through the userspace SOCKS5 proxy"
-      unset TS_OAUTH_CLIENT_ID TS_OAUTH_SECRET
+      unset TS_OAUTH_CLIENT_ID TS_OAUTH_SECRET TS_ADVERTISE_TAGS
 
       case "$(uname -m)" in
         x86_64) OP_ARCH=amd64 ;;
