@@ -47,7 +47,7 @@ steps:
       TS_SOCKET=/tmp/tailscaled.sock
       TS_LOG=/tmp/tailscaled.log
       echo "Starting tailscaled"
-      tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:1055 \\
+      tailscaled --tun=userspace-networking --socks5-server=127.0.0.1:1055 \
         --state=/tmp/tailscaled.state --socket="$TS_SOCKET" > "$TS_LOG" 2>&1 &
       TS_DAEMON_PID=$!
 
