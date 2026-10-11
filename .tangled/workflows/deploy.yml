@@ -4,26 +4,107 @@ when:
   - event: ["push"]
     tag: ["*"]
 engine: microvm
-image: nixos
-dependencies:
-  - tailscale
-  - _1password-cli
+image: alpine
 
 steps:
-  - name: "Log into Tailscale"
-    command: |
-      set -eu
-      : "${TS_OAUTH_CLIENT_ID:?Set the Tailscale Oauth client ID as a Tangled secret named TS_OAUTH_CLIENT_ID}"
-      : "${TS_OAUTH_SECRET:?Set the Tailscale Oauth secret as a Tangled secret named TS_OAUTH_SECRET}"
-      tailscale login --client-id "$TS_OAUTH_CLIENT_ID" --client-secret "$TS_OAUTH_SECRET"
-      tailscale up
-  - name: "Set up uncloud"
-    command: |
-        mise use github:psviderski/uncloud[exe=uc]
   - name: "Deploy"
     command: |
-        set -eu
-        : "${OP_SERVICE_ACCOUNT_TOKEN}:?Set the 1Password service account token as a Tangled secret"
-        for f in */compose.yml; do
-          uc deploy -f "$f" --uncloud-config config.yaml -y
-        done
+      set -eu
+
+      : "${TS_OAUTH_CLIENT_ID:?Set the Tailscale OAuth client ID as a Tangled secret named TS_OAUTH_CLIENT_ID}"
+      : "${TS_OAUTH_SECRET:?Set the Tailscale OAuth secret as a Tangled secret named TS_OAUTH_SECRET}"
+      : "${OP_SERVICE_ACCOUNT_TOKEN:?Set the 1Password service account token as a Tangled secret named OP_SERVICE_ACCOUNT_TOKEN}"
+      : "${OP_SSH_KEY_REF:?Set OP_SSH_KEY_REF to the op:// reference for the spruce SSH private key in 1Password}"
+      : "${VOIDAUTH_ENV:?Set VOIDAUTH_ENV to the complete voidauth/.env contents as a Tangled secret}"
+      : "${PORTAINER_ENV:?Set PORTAINER_ENV to the complete portainer/.env contents as a Tangled secret}"
+      : "${WILLOWIDK_ENV:?Set WILLOWIDK_ENV to the complete willowidk.dev/.env contents as a Tangled secret}"
+      : "${CALNODE_ENV:?Set CALNODE_ENV to the complete calnode/.env contents as a Tangled secret}"
+
+      umask 077
+      printf '%s\n' "$VOIDAUTH_ENV" > voidauth/.env
+      printf '%s\n' "$PORTAINER_ENV" > portainer/.env
+      printf '%s\n' "$WILLOWIDK_ENV" > willowidk.dev/.env
+      printf '%s\n' "$CALNODE_ENV" > calnode/.env
+      unset VOIDAUTH_ENV PORTAINER_ENV WILLOWIDK_ENV CALNODE_ENV
+
+      SSH_KEY_FILE="$HOME/.ssh/spruce-deploy-key"
+      cleanup() {
+        if [ -n "${SSH_AGENT_PID:-}" ]; then
+          ssh-agent -k >/dev/null 2>&1 || true
+        fi
+        if [ -n "${TS_DAEMON_PID:-}" ]; then
+          kill "$TS_DAEMON_PID" 2>/dev/null || true
+        fi
+        rm -f voidauth/.env portainer/.env willowidk.dev/.env calnode/.env
+        rm -f "$SSH_KEY_FILE" "$HOME/.ssh/config" /tmp/op.zip /tmp/install-uncloud.sh
+        rm -f /tmp/tailscaled.state /tmp/tailscaled.log /tmp/tailscaled.sock
+      }
+      trap cleanup EXIT
+
+      apk add --no-cache ca-certificates curl git openssh-client tailscale unzip
+      update-ca-certificates
+
+      TS_SOCKET=/tmp/tailscaled.sock
+      TS_LOG=/tmp/tailscaled.log
+      tailscaled --state=/tmp/tailscaled.state --socket="$TS_SOCKET" > "$TS_LOG" 2>&1 &
+      TS_DAEMON_PID=$!
+
+      i=0
+      while [ ! -S "$TS_SOCKET" ] && [ "$i" -lt 30 ]; do
+        sleep 1
+        i=$((i + 1))
+      done
+      if [ ! -S "$TS_SOCKET" ]; then
+        echo "tailscaled failed to start:" >&2
+        cat "$TS_LOG" >&2
+        exit 1
+      fi
+
+      tailscale --socket="$TS_SOCKET" login \
+        --client-id "$TS_OAUTH_CLIENT_ID" \
+        --client-secret "$TS_OAUTH_SECRET"
+      tailscale --socket="$TS_SOCKET" up
+      unset TS_OAUTH_CLIENT_ID TS_OAUTH_SECRET
+
+      case "$(uname -m)" in
+        x86_64) OP_ARCH=amd64 ;;
+        aarch64) OP_ARCH=arm64 ;;
+        *) echo "Unsupported architecture for 1Password CLI: $(uname -m)" >&2; exit 1 ;;
+      esac
+      OP_VERSION=2.30.3
+      curl -fsSL -o /tmp/op.zip \
+        "https://cache.agilebits.com/dist/1P/op2/pkg/v${OP_VERSION}/op_linux_${OP_ARCH}_v${OP_VERSION}.zip"
+      unzip -p /tmp/op.zip op > /usr/local/bin/op
+      chmod 755 /usr/local/bin/op
+      rm -f /tmp/op.zip
+
+      mkdir -p "$HOME/.ssh"
+      chmod 700 "$HOME/.ssh"
+      op read "$OP_SSH_KEY_REF" > "$SSH_KEY_FILE"
+      chmod 600 "$SSH_KEY_FILE"
+      eval "$(ssh-agent -s)" >/dev/null
+      ssh-add "$SSH_KEY_FILE"
+      unset OP_SERVICE_ACCOUNT_TOKEN OP_SSH_KEY_REF
+      cat > "$HOME/.ssh/config" <<EOF
+      Host spruce
+        HostName spruce
+        User cypress
+        IdentityFile $SSH_KEY_FILE
+        IdentitiesOnly yes
+        StrictHostKeyChecking accept-new
+      EOF
+      chmod 600 "$HOME/.ssh/config"
+
+      curl -fsSL -o /tmp/install-uncloud.sh https://get.uncloud.run/install.sh
+      sh /tmp/install-uncloud.sh
+      rm -f /tmp/install-uncloud.sh
+      export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
+      command -v uc >/dev/null 2>&1 || {
+        echo "Uncloud installer completed but uc is not on PATH" >&2
+        exit 1
+      }
+
+      for f in */compose.yml; do
+        echo "Deploying $f"
+        uc deploy -f "$f" --uncloud-config config.yaml -y
+      done
