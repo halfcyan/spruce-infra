@@ -10,8 +10,7 @@ clone:
 dependencies:
   nixpkgs:
     - tailscale
-    - mise
-    - _1password-cli
+    - 1password-cli
 
 steps:
   - name: "Log into Tailscale"
