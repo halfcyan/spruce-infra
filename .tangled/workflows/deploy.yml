@@ -1,0 +1,33 @@
+when:
+  - event: ["push"]
+    branch: ["*"]
+  - event: ["push"]
+    tag: ["*"]
+engine: "nixery"
+clone:
+  depth: 0
+  submodules: false
+dependencies:
+  nixpkgs:
+    - tailscale
+    - mise
+    - 1password
+
+steps:
+  - name: "Log into Tailscale"
+    command: |
+      set -eu
+      : "${TS_OAUTH_CLIENT_ID:?Set the Tailscale Oauth client ID as a Tangled secret named TS_OAUTH_CLIENT_ID}"
+      : "${TS_OAUTH_SECRET:?Set the Tailscale Oauth secret as a Tangled secret named TS_OAUTH_SECRET}"
+      tailscale login --client-id "$TS_OAUTH_CLIENT_ID" --client-secret "$TS_OAUTH_SECRET"
+      tailscale up
+  - name: "Set up uncloud"
+    command: |
+        mise use github:psviderski/uncloud[exe=uc]
+  - name: "Deploy"
+    command: |
+        set -eu
+        : "${OP_SERVICE_ACCOUNT_TOKEN}:?Set the 1Password service account token as a Tangled secret"
+        for f in */compose.yml; do
+          uc deploy -f "$f" --uncloud-config config.yaml -y
+        done

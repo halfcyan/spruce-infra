@@ -1,0 +1,5 @@
+current_context: spruce
+contexts:
+  spruce:
+    connections:
+      - ssh: cypress@spruce
