@@ -41,11 +41,12 @@ steps:
       }
       trap cleanup EXIT
 
-      apk add --no-cache ca-certificates curl git openssh-client tailscale unzip
-      update-ca-certificates
+      echo "Installing Alpine deployment tools"
+      apk add --no-cache ca-certificates-bundle curl git openssh-client tailscale unzip
 
       TS_SOCKET=/tmp/tailscaled.sock
       TS_LOG=/tmp/tailscaled.log
+      echo "Starting tailscaled"
       tailscaled --state=/tmp/tailscaled.state --socket="$TS_SOCKET" > "$TS_LOG" 2>&1 &
       TS_DAEMON_PID=$!
 
@@ -60,10 +61,20 @@ steps:
         exit 1
       fi
 
-      tailscale --socket="$TS_SOCKET" login \
+      echo "Authenticating this runner with Tailscale"
+      if ! tailscale --socket="$TS_SOCKET" login --timeout=2m \
         --client-id "$TS_OAUTH_CLIENT_ID" \
-        --client-secret "$TS_OAUTH_SECRET"
-      tailscale --socket="$TS_SOCKET" up
+        --client-secret "$TS_OAUTH_SECRET"; then
+        echo "Tailscale login failed; daemon log follows:" >&2
+        cat "$TS_LOG" >&2
+        exit 1
+      fi
+      if ! tailscale --socket="$TS_SOCKET" up --timeout=2m; then
+        echo "Tailscale failed to come up; daemon log follows:" >&2
+        cat "$TS_LOG" >&2
+        exit 1
+      fi
+      echo "Tailscale is connected"
       unset TS_OAUTH_CLIENT_ID TS_OAUTH_SECRET
 
       case "$(uname -m)" in
@@ -80,6 +91,7 @@ steps:
 
       mkdir -p "$HOME/.ssh"
       chmod 700 "$HOME/.ssh"
+      echo "Retrieving the SSH key from 1Password"
       op read "$OP_SSH_KEY_REF" > "$SSH_KEY_FILE"
       chmod 600 "$SSH_KEY_FILE"
       eval "$(ssh-agent -s)" >/dev/null
@@ -95,6 +107,7 @@ steps:
       EOF
       chmod 600 "$HOME/.ssh/config"
 
+      echo "Installing Uncloud CLI"
       curl -fsSL -o /tmp/install-uncloud.sh https://get.uncloud.run/install.sh
       sh /tmp/install-uncloud.sh
       rm -f /tmp/install-uncloud.sh
@@ -108,3 +121,5 @@ steps:
         echo "Deploying $f"
         uc deploy -f "$f" --uncloud-config config.yaml -y
       done
+
+      tailscale logout
