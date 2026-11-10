@@ -16,6 +16,8 @@ HealthRetries=5
 Notify=healthy
 
 [Service]
+# podman won't create missing bind mount sources
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/voidauth/db
 Restart=always
 TimeoutStartSec=900
 

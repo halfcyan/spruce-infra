@@ -10,6 +10,8 @@ EnvironmentFile=%h/spruce-infra/calnode/.env
 Volume=%h/spruce-infra/calnode/data:/data:Z
 
 [Service]
+# podman won't create missing bind mount sources
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/calnode/data
 Restart=always
 TimeoutStartSec=900
 

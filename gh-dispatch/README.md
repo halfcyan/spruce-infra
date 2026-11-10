@@ -22,8 +22,9 @@ op inject -i .env.tpl -o .env
 systemctl --user start gh-dispatch
 ```
 
-The repository, ref, and workflow list are set in `gh-dispatch.container`. The loop itself is `dispatch.sh`. Add more workflow
-file names to `DISPATCH_WORKFLOWS` to dispatch them too.
+The repository, ref, and workflow list are set in `gh-dispatch.container`, and the loop
+itself is `dispatch.sh`. Add more workflow file names to `DISPATCH_WORKFLOWS` to
+dispatch them too.
 
 The target workflow must keep `workflow_dispatch:` in its `on:` block. Once this is
 running, drop its `schedule:` trigger so it doesn't double up when GitHub does fire it.
