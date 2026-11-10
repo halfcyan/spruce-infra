@@ -1,0 +1,17 @@
+[Unit]
+Description=CalNode booking service
+
+[Container]
+Image=ghcr.io/calnode/calnode:latest
+AutoUpdate=registry
+ContainerName=calnode
+Network=npm.network
+EnvironmentFile=%h/spruce-infra/calnode/.env
+Volume=%h/spruce-infra/calnode/data:/data:Z
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

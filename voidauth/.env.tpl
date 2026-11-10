@@ -2,11 +2,12 @@
 APP_URL=https://auth.willowidk.dev
 
 # Generate with: openssl rand -base64 32
-STORAGE_KEY=
+STORAGE_KEY={{ op://spruce/voidauth/STORAGE_KEY }}
 
-# Must match the Postgres password used by voidauth-db.
+# Shared with voidauth-db as POSTGRES_PASSWORD.
 # Generate with: openssl rand -base64 32
-DB_PASSWORD=
+DB_PASSWORD={{ op://spruce/voidauth/DB_PASSWORD }}
+POSTGRES_PASSWORD={{ op://spruce/voidauth/DB_PASSWORD }}
 
 # Upstream default for the compose database service.
 DB_ADAPTER=postgres

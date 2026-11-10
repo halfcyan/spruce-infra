@@ -1,0 +1,3 @@
+# shared network for everything Nginx Proxy Manager forwards to
+[Network]
+NetworkName=npm

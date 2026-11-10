@@ -1,0 +1,3 @@
+[Volume]
+# name podman-compose gave it, so existing Portainer state carries over
+VolumeName=portainer_portainer_data

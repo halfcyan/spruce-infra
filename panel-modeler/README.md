@@ -7,10 +7,10 @@ Nginx Proxy Manager only if the database should be reachable from outside the VP
 ## Setup
 
 Copy or update `data/panels.json` from the panel-modeler repository, then start it
-from this directory:
+with:
 
 ```sh
-podman-compose up -d
+systemctl --user start panel-modeler-panels
 ```
 
 The internal service address is:
@@ -43,8 +43,7 @@ The tracked copy is `data/panels.json`. Validate it before restarting:
 
 ```sh
 python3 -m json.tool data/panels.json >/dev/null
-podman-compose config >/dev/null
-podman-compose up -d
+systemctl --user restart panel-modeler-panels
 ```
 
 Panel values are nominal and should be checked against current manufacturer

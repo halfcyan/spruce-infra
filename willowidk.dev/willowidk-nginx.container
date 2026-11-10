@@ -1,0 +1,17 @@
+[Unit]
+Description=willowidk.dev static site
+
+[Container]
+Image=docker.io/library/nginx:alpine
+AutoUpdate=registry
+ContainerName=willowidk-nginx
+Network=npm.network
+Volume=%h/spruce-infra/willowidk.dev/site:/usr/share/nginx/html:ro,z
+Volume=%h/spruce-infra/willowidk.dev/nginx.conf:/etc/nginx/conf.d/default.conf:ro,z
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

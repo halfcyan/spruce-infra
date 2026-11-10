@@ -1,0 +1,23 @@
+[Unit]
+Description=Portainer Business Edition
+Wants=podman.socket
+After=podman.socket
+
+[Container]
+Image=docker.io/portainer/portainer-ee:lts
+AutoUpdate=registry
+ContainerName=portainer
+Network=npm.network
+PublishPort=8000:8000
+PublishPort=9443:9443
+# rootless Podman API socket for this user
+Volume=%t/podman/podman.sock:/var/run/docker.sock
+Volume=portainer-data.volume:/data:Z
+PodmanArgs=--privileged
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

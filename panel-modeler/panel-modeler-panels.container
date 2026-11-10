@@ -1,0 +1,17 @@
+[Unit]
+Description=panel-modeler panel database
+
+[Container]
+Image=docker.io/library/nginx:alpine
+AutoUpdate=registry
+ContainerName=panel-modeler-panels
+Network=npm.network
+Volume=%h/spruce-infra/panel-modeler/data:/usr/share/nginx/html:ro,z
+Volume=%h/spruce-infra/panel-modeler/nginx.conf:/etc/nginx/conf.d/default.conf:ro,z
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

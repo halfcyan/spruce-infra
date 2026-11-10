@@ -1,8 +1,6 @@
 when:
   - event: ["push"]
-    branch: ["*"]
-  - event: ["push"]
-    tag: ["*"]
+    branch: ["main"]
 engine: microvm
 image: alpine
 
@@ -16,17 +14,8 @@ steps:
       : "${TS_ADVERTISE_TAGS:?Set TS_ADVERTISE_TAGS to a tag allowed for the Tailscale OAuth client, such as tag:deploy}"
       : "${OP_SERVICE_ACCOUNT_TOKEN:?Set the 1Password service account token as a Tangled secret named OP_SERVICE_ACCOUNT_TOKEN}"
       : "${OP_SSH_KEY_REF:?Set OP_SSH_KEY_REF to the op:// reference for the spruce SSH private key in 1Password}"
-      : "${VOIDAUTH_ENV:?Set VOIDAUTH_ENV to the complete voidauth/.env contents as a Tangled secret}"
-      : "${PORTAINER_ENV:?Set PORTAINER_ENV to the complete portainer/.env contents as a Tangled secret}"
-      : "${WILLOWIDK_ENV:?Set WILLOWIDK_ENV to the complete willowidk.dev/.env contents as a Tangled secret}"
-      : "${CALNODE_ENV:?Set CALNODE_ENV to the complete calnode/.env contents as a Tangled secret}"
 
       umask 077
-      printf '%s\n' "$VOIDAUTH_ENV" > voidauth/.env
-      printf '%s\n' "$PORTAINER_ENV" > portainer/.env
-      printf '%s\n' "$WILLOWIDK_ENV" > willowidk.dev/.env
-      printf '%s\n' "$CALNODE_ENV" > calnode/.env
-      unset VOIDAUTH_ENV PORTAINER_ENV WILLOWIDK_ENV CALNODE_ENV
 
       SSH_KEY_FILE="$HOME/.ssh/spruce-deploy-key"
       cleanup() {
@@ -36,14 +25,14 @@ steps:
         if [ -n "${TS_DAEMON_PID:-}" ]; then
           kill "$TS_DAEMON_PID" 2>/dev/null || true
         fi
-        rm -f voidauth/.env portainer/.env willowidk.dev/.env calnode/.env
-        rm -f "$SSH_KEY_FILE" "$HOME/.ssh/config" /tmp/op.zip /tmp/install-uncloud.sh
+        for tpl in */.env.tpl; do rm -f "${tpl%.tpl}"; done
+        rm -f "$SSH_KEY_FILE" "$HOME/.ssh/config" /tmp/op.zip
         rm -f /tmp/tailscaled.state /tmp/tailscaled.log /tmp/tailscaled.sock
       }
       trap cleanup EXIT
 
       echo "Installing Alpine deployment tools"
-      apk add --no-cache ca-certificates-bundle curl git netcat-openbsd openssh-client tailscale unzip
+      apk add --no-cache ca-certificates-bundle curl netcat-openbsd openssh-client tailscale unzip
 
       TS_SOCKET=/tmp/tailscaled.sock
       TS_LOG=/tmp/tailscaled.log
@@ -104,6 +93,11 @@ steps:
       chmod 600 "$SSH_KEY_FILE"
       eval "$(ssh-agent -s)" >/dev/null
       ssh-add "$SSH_KEY_FILE"
+
+      echo "Rendering service .env files from 1Password"
+      for tpl in */.env.tpl; do
+        op inject -f -i "$tpl" -o "${tpl%.tpl}" >/dev/null
+      done
       unset OP_SERVICE_ACCOUNT_TOKEN OP_SSH_KEY_REF
       cat > "$HOME/.ssh/config" <<EOF
       Host spruce
@@ -116,19 +110,15 @@ steps:
       EOF
       chmod 600 "$HOME/.ssh/config"
 
-      echo "Installing Uncloud CLI"
-      curl -fsSL -o /tmp/install-uncloud.sh https://get.uncloud.run/install.sh
-      sh /tmp/install-uncloud.sh
-      rm -f /tmp/install-uncloud.sh
-      export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
-      command -v uc >/dev/null 2>&1 || {
-        echo "Uncloud installer completed but uc is not on PATH" >&2
-        exit 1
-      }
+      echo "Uploading service .env files"
+      tar -cf - */.env | ssh spruce 'umask 077 && rm -rf ~/.cache/spruce-infra-env &&
+        mkdir -p ~/.cache/spruce-infra-env && tar -xf - -C ~/.cache/spruce-infra-env'
 
-      for f in */compose.yml; do
-        echo "Deploying $f"
-        uc deploy -f "$f" --uncloud-config config.yaml -y
-      done
+      echo "Deploying Quadlet units on spruce"
+      ssh spruce 'set -eu
+        cd ~/spruce-infra
+        old=$(git rev-parse HEAD)
+        git pull --ff-only
+        ./deploy.sh --since "$old" --env-dir ~/.cache/spruce-infra-env'
 
-      tailscale logout
+      tailscale --socket="$TS_SOCKET" logout || true

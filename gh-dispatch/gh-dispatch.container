@@ -1,0 +1,21 @@
+[Unit]
+Description=hourly workflow_dispatch for Ultramarine-Linux/packages
+
+[Container]
+Image=docker.io/curlimages/curl:8.17.0
+ContainerName=gh-dispatch
+EnvironmentFile=%h/spruce-infra/gh-dispatch/.env
+Environment=DISPATCH_REPOSITORY=Ultramarine-Linux/packages
+Environment=DISPATCH_REF=umrawhide
+# space separated workflow file names
+Environment="DISPATCH_WORKFLOWS=update.yml"
+Volume=%h/spruce-infra/gh-dispatch/dispatch.sh:/dispatch.sh:ro,Z
+Entrypoint=/bin/sh
+Exec=/dispatch.sh
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

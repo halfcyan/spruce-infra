@@ -1,14 +1,11 @@
 # Nginx Proxy Manager
 
-Rootless Podman Compose definition for Nginx Proxy Manager.
+Quadlet units for Nginx Proxy Manager and the shared `npm` network.
 
 ## Prerequisites
 
-Create the shared proxy network once:
-
-```sh
-podman network create npm
-```
+`npm.network` creates the shared proxy network named `npm`. Every service that Nginx
+Proxy Manager forwards to joins it with `Network=npm.network`.
 
 Rootless Podman also needs permission to bind ports 80 and 443:
 
@@ -20,7 +17,7 @@ sudo sysctl --system
 ## Start
 
 ```sh
-podman-compose up -d
+systemctl --user start nginx-proxy-manager
 ```
 
 Admin UI:

@@ -1,6 +1,7 @@
 # willowidk.dev
 
-Static site service plus GitHub webhook updater.
+Static site service plus GitHub webhook updater. `willowidk-webhook.build` builds the
+webhook image from `webhook/Containerfile`. Restart `willowidk-webhook-build` to rebuild it.
 
 ## Runtime layout
 
@@ -12,17 +13,17 @@ git clone git@github.com:halfcyan/willowidk.dev.git site
 
 ## Setup
 
-```sh
-cp .env.example .env
-chmod 600 .env
-```
+Create a `willowidk.dev` item in the `spruce` 1Password vault with a `WEBHOOK_SECRET`
+field set to a fresh random secret, then render `.env`:
 
-Edit `.env` and set a fresh GitHub webhook secret.
+```sh
+op inject -i .env.tpl -o .env
+```
 
 Start:
 
 ```sh
-podman-compose up -d --build
+systemctl --user start willowidk-nginx willowidk-webhook
 ```
 
 ## GitHub webhook

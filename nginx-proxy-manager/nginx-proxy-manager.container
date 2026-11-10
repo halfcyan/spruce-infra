@@ -1,0 +1,21 @@
+[Unit]
+Description=Nginx Proxy Manager
+
+[Container]
+Image=docker.io/jc21/nginx-proxy-manager:latest
+AutoUpdate=registry
+ContainerName=nginx-proxy-manager
+Network=npm.network
+PublishPort=80:80
+PublishPort=81:81
+PublishPort=443:443
+Environment=TZ=America/Denver
+Volume=%h/spruce-infra/nginx-proxy-manager/data:/data:Z
+Volume=%h/spruce-infra/nginx-proxy-manager/letsencrypt:/etc/letsencrypt:Z
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

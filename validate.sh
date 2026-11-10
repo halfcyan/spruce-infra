@@ -1,30 +1,25 @@
 #!/bin/sh
+# check that every Quadlet unit in the repo generates a valid systemd service
 set -eu
 
-cleanup_envs=""
+cd "$(dirname "$0")"
 
-prepare_env() {
-    dir="$1"
-    if [ ! -f "$dir/.env" ] && [ -f "$dir/.env.example" ]; then
-        cp "$dir/.env.example" "$dir/.env"
-        cleanup_envs="$cleanup_envs $dir/.env"
+quadlet=/usr/libexec/podman/quadlet
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+for unit in */*.container */*.network */*.volume */*.build; do
+    [ -e "$unit" ] || continue
+    name=$(basename "$unit")
+    if [ -e "$tmp/$name" ]; then
+        echo "duplicate unit name: $name" >&2
+        exit 1
     fi
-}
-
-prepare_env "voidauth"
-prepare_env "willowidk.dev"
-prepare_env "portainer"
-prepare_env "calnode"
-
-if [ -f "portainer/.env" ]; then
-    uid=$(id -u)
-    sed -i "s|<uid>|$uid|" portainer/.env
-fi
-
-trap 'for env in $cleanup_envs; do rm -f "$env"; done' EXIT
-
-for compose in nginx-proxy-manager/compose.yml voidauth/compose.yml willowidk.dev/compose.yml portainer/compose.yml calnode/compose.yml; do
-    dir=$(dirname "$compose")
-    echo "Validating $compose"
-    (cd "$dir" && podman-compose config >/dev/null)
+    cp "$unit" "$tmp/$name"
 done
+
+echo "Validating Quadlet units"
+if ! out=$(QUADLET_UNIT_DIRS="$tmp" "$quadlet" -dryrun -user 2>&1 >/dev/null); then
+    echo "$out" >&2
+    exit 1
+fi

@@ -1,0 +1,18 @@
+[Unit]
+Description=willowidk.dev GitHub webhook updater
+
+[Container]
+Image=willowidk-webhook.build
+ContainerName=willowidk-webhook
+Network=npm.network
+EnvironmentFile=%h/spruce-infra/willowidk.dev/.env
+Volume=%h/spruce-infra/willowidk.dev/site:/var/www:z
+Volume=%h/spruce-infra/willowidk.dev/rebuild.sh:/opt/rebuild.sh:ro,z
+Volume=%h/spruce-infra/willowidk.dev/webhook/hooks.json.template:/etc/webhook/hooks.json.template:ro,z
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

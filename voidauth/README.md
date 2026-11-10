@@ -16,29 +16,31 @@ VoidAuth provides:
 
 ## Setup
 
+Create a `voidauth` item in the `spruce` 1Password vault with these fields, each
+generated with `openssl rand -base64 32`:
+
+- `STORAGE_KEY`
+- `DB_PASSWORD`
+
+Then render `.env`:
+
 ```sh
-cp .env.example .env
-chmod 600 .env
-```
-
-Edit `.env` and set:
-
-```txt
-APP_URL=https://auth.willowidk.dev
-STORAGE_KEY=<openssl rand -base64 32>
-DB_PASSWORD=<openssl rand -base64 32>
+op inject -i .env.tpl -o .env
 ```
 
 ## Start
 
 ```sh
-podman-compose up -d
+systemctl --user start voidauth
 ```
+
+This also starts `voidauth-db`. `voidauth` only starts once the database passes its
+healthcheck.
 
 After first start, get the initial admin password reset link from the logs:
 
 ```sh
-podman-compose logs voidauth
+journalctl --user -u voidauth
 ```
 
 ## Nginx Proxy Manager

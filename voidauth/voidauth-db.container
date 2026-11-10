@@ -1,0 +1,23 @@
+[Unit]
+Description=VoidAuth Postgres database
+
+[Container]
+Image=docker.io/library/postgres:18
+AutoUpdate=registry
+ContainerName=voidauth-db
+Network=voidauth.network
+EnvironmentFile=%h/spruce-infra/voidauth/.env
+Volume=%h/spruce-infra/voidauth/db:/var/lib/postgresql/18/docker:Z
+HealthCmd=pg_isready -U postgres -h localhost
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=5
+# only report started once the healthcheck passes, so voidauth waits for it
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

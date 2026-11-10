@@ -1,0 +1,20 @@
+[Unit]
+Description=VoidAuth SSO provider
+Requires=voidauth-db.service
+After=voidauth-db.service
+
+[Container]
+Image=docker.io/voidauth/voidauth:latest
+AutoUpdate=registry
+ContainerName=voidauth
+Network=voidauth.network
+Network=npm.network
+EnvironmentFile=%h/spruce-infra/voidauth/.env
+Volume=%h/spruce-infra/voidauth/config:/app/config:Z
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target
