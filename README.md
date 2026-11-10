@@ -63,7 +63,7 @@ git clone https://tangled.org/willowidk.dev/spruce-infra ~/spruce-infra
 
 Authorize the deploy pipeline's SSH key (the public half of `OP_SSH_KEY_REF`) in
 `~/.ssh/authorized_keys`, and allow the pipeline's Tailscale tag to reach spruce on
-port 22 in the tailnet policy.
+port 1010 (spruce's sshd port) in the tailnet policy.
 
 ## Secrets
 

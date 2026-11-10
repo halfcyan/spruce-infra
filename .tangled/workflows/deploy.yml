@@ -86,6 +86,14 @@ steps:
         exit 1
       fi
       echo "Tailscale is connected through the userspace SOCKS5 proxy"
+
+      # peers only show up in the netmap if the tailnet policy lets this node reach them
+      if ! SPRUCE_IP=$(tailscale --socket="$TS_SOCKET" ip -4 spruce); then
+        echo "spruce is not visible to this node. Check that the tailnet policy grants $TS_ADVERTISE_TAGS access to spruce on port 1010" >&2
+        tailscale --socket="$TS_SOCKET" status >&2 || true
+        exit 1
+      fi
+      echo "Resolved spruce to $SPRUCE_IP"
       unset TS_OAUTH_CLIENT_ID TS_OAUTH_SECRET TS_ADVERTISE_TAGS
 
       case "$(uname -m)" in
@@ -118,7 +126,9 @@ steps:
       unset OP_SERVICE_ACCOUNT_TOKEN OP_SSH_KEY_REF
       cat > "$HOME/.ssh/config" <<EOF
       Host spruce
-        HostName spruce
+        HostName $SPRUCE_IP
+        Port 1010
+        HostKeyAlias spruce
         User cypress
         IdentityFile $SSH_KEY_FILE
         IdentitiesOnly yes
