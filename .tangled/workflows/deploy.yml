@@ -8,6 +8,8 @@ steps:
   - name: "Deploy"
     command: |
       set -eu
+      # spindle drops stdout partway through, so send everything through stderr
+      exec >&2
 
       : "${TS_OAUTH_CLIENT_ID:?Set the Tailscale OAuth client ID as a Tangled secret named TS_OAUTH_CLIENT_ID}"
       : "${TS_OAUTH_SECRET:?Set the Tailscale OAuth secret as a Tangled secret named TS_OAUTH_SECRET}"
@@ -19,6 +21,8 @@ steps:
 
       SSH_KEY_FILE="$HOME/.ssh/spruce-deploy-key"
       cleanup() {
+        status=$?
+        echo "Deploy step exited with status $status"
         if [ -n "${SSH_AGENT_PID:-}" ]; then
           ssh-agent -k >/dev/null 2>&1 || true
         fi
