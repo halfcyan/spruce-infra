@@ -69,11 +69,17 @@ steps:
         cat "$TS_LOG" >&2
         exit 1
       fi
-      if ! tailscale --socket="$TS_SOCKET" up --timeout=2m; then
-        echo "Tailscale failed to come up; daemon log follows:" >&2
-        cat "$TS_LOG" >&2
-        exit 1
-      fi
+      # login already brings the node up with its tags, so wait for it to connect
+      i=0
+      until tailscale --socket="$TS_SOCKET" status >/dev/null 2>&1; do
+        if [ "$i" -ge 60 ]; then
+          echo "Tailscale failed to come up; daemon log follows:" >&2
+          cat "$TS_LOG" >&2
+          exit 1
+        fi
+        sleep 1
+        i=$((i + 1))
+      done
       if ! nc -z 127.0.0.1 1055; then
         echo "Tailscale SOCKS5 proxy did not start; daemon log follows:" >&2
         cat "$TS_LOG" >&2
