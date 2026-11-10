@@ -2,7 +2,14 @@ when:
   - event: ["push"]
     branch: ["main"]
 engine: microvm
-image: alpine
+image: nixos
+dependencies:
+  - curl
+  - gnutar
+  - netcat-openbsd
+  - openssh
+  - tailscale
+  - unzip
 
 steps:
   - name: "Deploy"
@@ -34,9 +41,6 @@ steps:
         rm -f /tmp/tailscaled.state /tmp/tailscaled.log /tmp/tailscaled.sock
       }
       trap cleanup EXIT
-
-      echo "Installing Alpine deployment tools"
-      apk add --no-cache ca-certificates-bundle curl netcat-openbsd openssh-client tailscale unzip
 
       TS_SOCKET=/tmp/tailscaled.sock
       TS_LOG=/tmp/tailscaled.log
@@ -86,8 +90,11 @@ steps:
       OP_VERSION=2.30.3
       curl -fsSL -o /tmp/op.zip \
         "https://cache.agilebits.com/dist/1P/op2/pkg/v${OP_VERSION}/op_linux_${OP_ARCH}_v${OP_VERSION}.zip"
-      unzip -p /tmp/op.zip op > /usr/local/bin/op
-      chmod 755 /usr/local/bin/op
+      # steps run unprivileged, so install op for this user
+      mkdir -p "$HOME/.local/bin"
+      unzip -p /tmp/op.zip op > "$HOME/.local/bin/op"
+      chmod 755 "$HOME/.local/bin/op"
+      export PATH="$HOME/.local/bin:$PATH"
       rm -f /tmp/op.zip
 
       mkdir -p "$HOME/.ssh"
