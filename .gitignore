@@ -17,6 +17,7 @@
 **/tmp/
 /voidauth/config/
 /voidauth/db/
+/outline/db/
 
 # Local app checkouts mounted into containers
 **/site/

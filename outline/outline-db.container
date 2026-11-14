@@ -1,0 +1,23 @@
+[Unit]
+Description=Outline Postgres database
+
+[Container]
+Image=docker.io/library/postgres:18
+AutoUpdate=registry
+ContainerName=outline-db
+Network=outline.network
+EnvironmentFile=%h/spruce-infra/outline/.env
+Volume=%h/spruce-infra/outline/db:/var/lib/postgresql/18/docker:Z
+HealthCmd=pg_isready -U outline -d outline -h localhost
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=5
+Notify=healthy
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/outline/db
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

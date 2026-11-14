@@ -1,0 +1,21 @@
+[Unit]
+Description=Outline knowledge base
+Requires=outline-db.service outline-redis.service
+After=outline-db.service outline-redis.service
+
+[Container]
+Image=docker.io/outlinewiki/outline:latest
+AutoUpdate=registry
+ContainerName=outline
+Network=outline.network
+Network=npm.network
+EnvironmentFile=%h/spruce-infra/outline/.env
+Volume=%h/spruce-infra/outline/data:/var/lib/outline/data:Z,U
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/outline/data
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

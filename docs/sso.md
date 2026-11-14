@@ -39,6 +39,12 @@ https://portainer.willowidk.dev
 
 Confirm the exact callback path in Portainer's authentication settings before creating the client in VoidAuth.
 
+### Outline
+
+Native OIDC. The `outline` client is declared through environment variables in
+`voidauth/.env.tpl`, with the redirect URL `https://docs.willowidk.dev/auth/oidc.callback`
+and `client_secret_post` auth. See `outline/README.md`.
+
 ### Nginx Proxy Manager
 
 Nginx Proxy Manager does not provide native OIDC for its admin UI. Recommended options:

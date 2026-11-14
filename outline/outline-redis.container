@@ -1,0 +1,20 @@
+[Unit]
+Description=Outline Valkey cache
+
+[Container]
+Image=docker.io/valkey/valkey:8-alpine
+AutoUpdate=registry
+ContainerName=outline-redis
+Network=outline.network
+HealthCmd=valkey-cli ping
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=5
+Notify=healthy
+
+[Service]
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

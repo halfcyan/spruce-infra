@@ -12,6 +12,7 @@ This repository tracks service definitions and templates, not live runtime state
 - `willowidk.dev/` - static site Nginx container plus GitHub webhook updater.
 - `panel-modeler/` - internal static panel database for the panel-modeler desktop application.
 - `calnode/` - self-hosted CalNode booking service with SQLite and Mailcow SMTP.
+- `outline/` - Outline knowledge base with VoidAuth OIDC sign-in.
 - `gh-dispatch/` - hourly `workflow_dispatch` trigger for Ultramarine-Linux/packages' update workflow.
 
 ## Host assumptions
@@ -177,6 +178,16 @@ Forward Hostname / IP: calnode
 Forward Port: 3000
 ```
 
+Outline:
+
+```txt
+Domain: docs.willowidk.dev
+Scheme: http
+Forward Hostname / IP: outline
+Forward Port: 3000
+Websockets Support: on
+```
+
 Portainer:
 
 ```txt
@@ -194,6 +205,7 @@ Do not commit:
 - Nginx Proxy Manager `data/`
 - Nginx Proxy Manager `letsencrypt/`
 - VoidAuth `config/` and `db/`
+- Outline `db/` and `data/`
 - Portainer `portainer_data` volume
 - app `site/` checkouts
 - gh-dispatch `.env` GitHub token
