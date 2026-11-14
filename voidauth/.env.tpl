@@ -14,10 +14,10 @@ DB_ADAPTER=postgres
 DB_HOST=voidauth-db
 
 OIDC_outline_CLIENT_DISPLAY_NAME=Outline
-OIDC_outline_CLIENT_HOMEPAGE_URL=https://docs.willowidk.dev
+OIDC_outline_CLIENT_HOMEPAGE_URL=https://outline.willowidk.dev
 OIDC_outline_CLIENT_SECRET={{ op://spruce/outline/OIDC_CLIENT_SECRET }}
 OIDC_outline_CLIENT_AUTH_METHOD=client_secret_post
-OIDC_outline_CLIENT_REDIRECT_URLS=https://docs.willowidk.dev/auth/oidc.callback
-OIDC_outline_CLIENT_POST_LOGOUT_URLS=https://docs.willowidk.dev
+OIDC_outline_CLIENT_REDIRECT_URLS=https://outline.willowidk.dev/auth/oidc.callback
+OIDC_outline_CLIENT_POST_LOGOUT_URLS=https://outline.willowidk.dev
 OIDC_outline_CLIENT_GRANT_TYPES=authorization_code, refresh_token
 OIDC_outline_CLIENT_SKIP_CONSENT=true
