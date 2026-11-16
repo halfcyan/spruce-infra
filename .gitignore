@@ -19,7 +19,7 @@
 /hosts/spruce/voidauth/db/
 /hosts/spruce/outline/db/
 
-# Local app checkouts mounted into containers
+# local app checkouts mounted into containers
 **/site/
 
 # OS/editor noise
