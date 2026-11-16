@@ -1,0 +1,31 @@
+[Unit]
+Description=Jellyfin media server
+
+[Container]
+Image=docker.io/jellyfin/jellyfin:latest
+AutoUpdate=registry
+ContainerName=jellyfin
+# run as cypress so config/cache stay owned by cypress on the host
+UserNS=keep-id
+User=%U
+Group=%G
+# keep cypress's supplementary groups (render) so the iGPU is usable. Needs crun
+GroupAdd=keep-groups
+AddDevice=/dev/dri/renderD128
+# proxied by spruce's NPM over the tailnet
+PublishPort=8096:8096
+Environment=JELLYFIN_PublishedServerUrl=https://jellyfin.willowidk.dev
+Volume=%h/spruce-infra/hosts/pine/jellyfin/config:/config:Z
+Volume=%h/spruce-infra/hosts/pine/jellyfin/cache:/cache:Z
+# media library, read-only
+Volume=/mass-storage/bigboi/media:/media:ro,z
+
+[Service]
+# podman won't create missing bind mount sources
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/hosts/pine/jellyfin/config
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/hosts/pine/jellyfin/cache
+Restart=always
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

@@ -13,6 +13,10 @@ POSTGRES_PASSWORD={{ op://spruce/voidauth/DB_PASSWORD }}
 DB_ADAPTER=postgres
 DB_HOST=voidauth-db
 
+# read-only LDAP for Jellyfin on pine, reached through voidauth-ldap on the tailnet
+LDAP_ENABLED=true
+LDAP_BIND_PASSWORD={{ op://spruce/voidauth/LDAP_BIND_PASSWORD }}
+
 OIDC_outline_CLIENT_DISPLAY_NAME=Outline
 OIDC_outline_CLIENT_HOMEPAGE_URL=https://outline.willowidk.dev
 OIDC_outline_CLIENT_SECRET={{ op://spruce/outline/OIDC_CLIENT_SECRET }}

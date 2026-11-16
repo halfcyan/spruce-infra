@@ -21,6 +21,7 @@ generated with `openssl rand -base64 32`:
 
 - `STORAGE_KEY`
 - `DB_PASSWORD`
+- `LDAP_BIND_PASSWORD`
 
 Then render `.env`:
 
@@ -61,6 +62,19 @@ Forward Port: 3000
 ```
 
 Request a Let's Encrypt certificate and force SSL.
+
+## LDAP
+
+VoidAuth's read-only LDAP server (experimental upstream) is enabled for Jellyfin on pine.
+`voidauth-ldap` forwards it to `100.101.21.106:3890`, spruce's tailscale address, so it
+is never published on the public interface. If spruce's tailscale IP changes, update
+`PublishPort=` in `voidauth-ldap.container`.
+
+Allow pine to reach `spruce:3890` in the tailnet policy.
+
+Accounts with MFA enabled can't bind over LDAP, because simple bind has no second factor.
+VoidAuth stores MFA per account, not per app. See `hosts/pine/jellyfin/README.md` for the
+workaround.
 
 ## Integrating apps
 

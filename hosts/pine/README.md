@@ -8,6 +8,10 @@ pine over the tailnet (WireGuard-encrypted).
 client --https--> spruce:443 (NPM) --http over tailnet--> pine:<port> (container)
 ```
 
+## Services
+
+- `jellyfin/` - Jellyfin media server at `jellyfin.willowidk.dev`, with iGPU transcoding.
+
 ## Host setup
 
 Same as spruce (see the top-level README) with these differences:

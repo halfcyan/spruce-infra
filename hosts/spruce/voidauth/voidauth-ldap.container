@@ -1,0 +1,24 @@
+[Unit]
+Description=VoidAuth LDAP on spruce's tailnet address
+Wants=voidauth.service
+After=voidauth.service
+# the publish fails until tailscale0 has its address, so keep retrying at boot
+StartLimitIntervalSec=0
+
+[Container]
+Image=docker.io/alpine/socat:latest
+AutoUpdate=registry
+ContainerName=voidauth-ldap
+Network=voidauth.network
+# bound to spruce's tailscale IP only so LDAP never reaches the public interface.
+# Plain LDAP is fine here because the tailnet already encrypts it.
+PublishPort=100.101.21.106:3890:3890
+Exec=tcp-listen:3890,fork,reuseaddr tcp-connect:voidauth:3890
+
+[Service]
+Restart=always
+RestartSec=10
+TimeoutStartSec=900
+
+[Install]
+WantedBy=default.target

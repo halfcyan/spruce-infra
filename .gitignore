@@ -18,6 +18,7 @@
 /hosts/spruce/voidauth/config/
 /hosts/spruce/voidauth/db/
 /hosts/spruce/outline/db/
+/hosts/pine/jellyfin/config/
 
 # local app checkouts mounted into containers
 **/site/

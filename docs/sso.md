@@ -45,6 +45,12 @@ Native OIDC. The `outline` client is declared through environment variables in
 `hosts/spruce/voidauth/.env.tpl`, with the redirect URL `https://docs.willowidk.dev/auth/oidc.callback`
 and `client_secret_post` auth. See `hosts/spruce/outline/README.md`.
 
+### Jellyfin (pine)
+
+VoidAuth LDAP through the official LDAP Authentication plugin, so native apps keep
+working with a username and password. MFA accounts can't bind. See
+`hosts/pine/jellyfin/README.md`.
+
 ### Nginx Proxy Manager
 
 Nginx Proxy Manager does not provide native OIDC for its admin UI. Recommended options:
