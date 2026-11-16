@@ -7,17 +7,17 @@
 
 # Runtime state / volumes
 **/data/
-!/panel-modeler/data/
-!/panel-modeler/data/panels.json
+!/hosts/spruce/panel-modeler/data/
+!/hosts/spruce/panel-modeler/data/panels.json
 **/letsencrypt/
 **/volumes/
 **/storage/
 **/cache/
 **/logs/
 **/tmp/
-/voidauth/config/
-/voidauth/db/
-/outline/db/
+/hosts/spruce/voidauth/config/
+/hosts/spruce/voidauth/db/
+/hosts/spruce/outline/db/
 
 # Local app checkouts mounted into containers
 **/site/

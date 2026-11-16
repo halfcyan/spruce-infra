@@ -6,8 +6,8 @@ Image=docker.io/library/postgres:18
 AutoUpdate=registry
 ContainerName=voidauth-db
 Network=voidauth.network
-EnvironmentFile=%h/spruce-infra/voidauth/.env
-Volume=%h/spruce-infra/voidauth/db:/var/lib/postgresql/18/docker:Z
+EnvironmentFile=%h/spruce-infra/hosts/spruce/voidauth/.env
+Volume=%h/spruce-infra/hosts/spruce/voidauth/db:/var/lib/postgresql/18/docker:Z
 HealthCmd=pg_isready -U postgres -h localhost
 HealthInterval=10s
 HealthTimeout=5s
@@ -17,7 +17,7 @@ Notify=healthy
 
 [Service]
 # podman won't create missing bind mount sources
-ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/voidauth/db
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/hosts/spruce/voidauth/db
 Restart=always
 TimeoutStartSec=900
 

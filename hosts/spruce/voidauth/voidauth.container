@@ -9,12 +9,12 @@ AutoUpdate=registry
 ContainerName=voidauth
 Network=voidauth.network
 Network=npm.network
-EnvironmentFile=%h/spruce-infra/voidauth/.env
-Volume=%h/spruce-infra/voidauth/config:/app/config:Z
+EnvironmentFile=%h/spruce-infra/hosts/spruce/voidauth/.env
+Volume=%h/spruce-infra/hosts/spruce/voidauth/config:/app/config:Z
 
 [Service]
 # podman won't create missing bind mount sources
-ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/voidauth/config
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/hosts/spruce/voidauth/config
 Restart=always
 TimeoutStartSec=900
 

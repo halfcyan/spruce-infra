@@ -1,0 +1,7 @@
+[Build]
+ImageTag=localhost/webhook-custom:latest
+File=%h/spruce-infra/hosts/spruce/willowidk.dev/webhook/Containerfile
+SetWorkingDirectory=%h/spruce-infra/hosts/spruce/willowidk.dev/webhook
+
+[Service]
+TimeoutStartSec=900

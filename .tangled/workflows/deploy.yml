@@ -36,7 +36,7 @@ steps:
         if [ -n "${TS_DAEMON_PID:-}" ]; then
           kill "$TS_DAEMON_PID" 2>/dev/null || true
         fi
-        for tpl in */.env.tpl; do rm -f "${tpl%.tpl}"; done
+        for tpl in hosts/*/*/.env.tpl; do rm -f "${tpl%.tpl}"; done
         rm -f "$SSH_KEY_FILE" "$HOME/.ssh/config" /tmp/op.zip
         rm -f /tmp/tailscaled.state /tmp/tailscaled.log /tmp/tailscaled.sock
       }
@@ -87,14 +87,7 @@ steps:
       fi
       echo "Tailscale is connected through the userspace SOCKS5 proxy"
 
-      # peers only show up in the netmap if the tailnet policy lets this node reach them
-      if ! SPRUCE_IP=$(tailscale --socket="$TS_SOCKET" ip -4 spruce); then
-        echo "spruce is not visible to this node. Check that the tailnet policy grants $TS_ADVERTISE_TAGS access to spruce on port 1010" >&2
-        tailscale --socket="$TS_SOCKET" status >&2 || true
-        exit 1
-      fi
-      echo "Resolved spruce to $SPRUCE_IP"
-      unset TS_OAUTH_CLIENT_ID TS_OAUTH_SECRET TS_ADVERTISE_TAGS
+      unset TS_OAUTH_CLIENT_ID TS_OAUTH_SECRET
 
       case "$(uname -m)" in
         x86_64) OP_ARCH=amd64 ;;
@@ -120,32 +113,59 @@ steps:
       ssh-add "$SSH_KEY_FILE"
 
       echo "Rendering service .env files from 1Password"
-      for tpl in */.env.tpl; do
+      for tpl in hosts/*/*/.env.tpl; do
         op inject -f -i "$tpl" -o "${tpl%.tpl}" >/dev/null
       done
       unset OP_SERVICE_ACCOUNT_TOKEN OP_SSH_KEY_REF
-      cat > "$HOME/.ssh/config" <<EOF
-      Host spruce
-        HostName $SPRUCE_IP
-        Port 1010
-        HostKeyAlias spruce
-        User cypress
+      failed=""
+      for hostdir in hosts/*/; do
+        host=$(basename "$hostdir")
+        SSH_PORT=22
+        SSH_USER=cypress
+        . "$hostdir/deploy.conf"
+
+        # peers only show up in the netmap if the tailnet policy lets this node reach them
+        if ! ip=$(tailscale --socket="$TS_SOCKET" ip -4 "$host"); then
+          echo "$host is not visible to this node. Check that the tailnet policy grants $TS_ADVERTISE_TAGS access to $host on port $SSH_PORT" >&2
+          failed="$failed $host"
+          continue
+        fi
+        echo "Resolved $host to $ip"
+        cat >> "$HOME/.ssh/config" <<EOF
+      Host $host
+        HostName $ip
+        Port $SSH_PORT
+        HostKeyAlias $host
+        User $SSH_USER
         IdentityFile $SSH_KEY_FILE
         IdentitiesOnly yes
         ProxyCommand nc -X 5 -x 127.0.0.1:1055 %h %p
         StrictHostKeyChecking accept-new
       EOF
-      chmod 600 "$HOME/.ssh/config"
+        chmod 600 "$HOME/.ssh/config"
 
-      echo "Uploading service .env files"
-      tar -cf - */.env | ssh spruce 'umask 077 && rm -rf ~/.cache/spruce-infra-env &&
-        mkdir -p ~/.cache/spruce-infra-env && tar -xf - -C ~/.cache/spruce-infra-env'
+        echo "Uploading service .env files to $host"
+        # a host with no secrets still gets an empty archive so the old env dir is cleared
+        if ! (cd "$hostdir" && find . -mindepth 2 -maxdepth 2 -name .env | tar -cf - -T -) |
+          ssh "$host" 'umask 077 && rm -rf ~/.cache/spruce-infra-env &&
+            mkdir -p ~/.cache/spruce-infra-env && tar -xf - -C ~/.cache/spruce-infra-env'; then
+          failed="$failed $host"
+          continue
+        fi
 
-      echo "Deploying Quadlet units on spruce"
-      ssh spruce 'set -eu
-        cd ~/spruce-infra
-        old=$(git rev-parse HEAD)
-        git pull --ff-only
-        ./deploy.sh --since "$old" --env-dir ~/.cache/spruce-infra-env'
+        echo "Deploying Quadlet units on $host"
+        if ! ssh "$host" "set -eu
+          cd ~/spruce-infra
+          old=\$(git rev-parse HEAD)
+          git pull --ff-only
+          ./deploy.sh --host $host --since \"\$old\" --env-dir ~/.cache/spruce-infra-env"; then
+          failed="$failed $host"
+        fi
+      done
 
       tailscale --socket="$TS_SOCKET" logout || true
+
+      if [ -n "$failed" ]; then
+        echo "Deploy failed on:$failed" >&2
+        exit 1
+      fi

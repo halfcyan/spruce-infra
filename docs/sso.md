@@ -42,8 +42,8 @@ Confirm the exact callback path in Portainer's authentication settings before cr
 ### Outline
 
 Native OIDC. The `outline` client is declared through environment variables in
-`voidauth/.env.tpl`, with the redirect URL `https://docs.willowidk.dev/auth/oidc.callback`
-and `client_secret_post` auth. See `outline/README.md`.
+`hosts/spruce/voidauth/.env.tpl`, with the redirect URL `https://docs.willowidk.dev/auth/oidc.callback`
+and `client_secret_post` auth. See `hosts/spruce/outline/README.md`.
 
 ### Nginx Proxy Manager
 

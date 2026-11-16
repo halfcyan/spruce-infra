@@ -6,12 +6,12 @@ Image=ghcr.io/calnode/calnode:latest
 AutoUpdate=registry
 ContainerName=calnode
 Network=npm.network
-EnvironmentFile=%h/spruce-infra/calnode/.env
-Volume=%h/spruce-infra/calnode/data:/data:Z
+EnvironmentFile=%h/spruce-infra/hosts/spruce/calnode/.env
+Volume=%h/spruce-infra/hosts/spruce/calnode/data:/data:Z
 
 [Service]
 # podman won't create missing bind mount sources
-ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/calnode/data
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/hosts/spruce/calnode/data
 Restart=always
 TimeoutStartSec=900
 

@@ -13,7 +13,7 @@ sudo sysctl --system
 
 Rootless Podman networks are user-scoped. Nginx Proxy Manager and app containers must run as the same Linux user to share the `npm` network.
 
-`nginx-proxy-manager/npm.network` creates it, and units join it with `Network=npm.network`.
+`hosts/spruce/nginx-proxy-manager/npm.network` creates it, and units join it with `Network=npm.network`.
 
 ## SELinux volume labels
 

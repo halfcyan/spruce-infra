@@ -1,21 +1,51 @@
 #!/bin/sh
-# install this repo's Quadlet units for the current user and (re)start services.
-# Run on spruce from the checkout at ~/spruce-infra.
+# install one host's Quadlet units for the current user and (re)start services.
+# Run on the host from the checkout at ~/spruce-infra.
 #
+#   --host NAME     deploy hosts/NAME (default: short hostname)
 #   --since REV     restart services whose directory changed between REV and HEAD
 #   --env-dir DIR   install rendered .env files from DIR/<service>/.env, then delete DIR
 set -eu
 
-cd "$(dirname "$(readlink -f "$0")")"
+repo=$(dirname "$(readlink -f "$0")")
 
+host=$(hostname -s)
 since=""
 env_dir=""
 while [ $# -gt 0 ]; do
     case "$1" in
+        --host) host="$2"; shift 2 ;;
         --since) since="$2"; shift 2 ;;
         --env-dir) env_dir="$2"; shift 2 ;;
-        *) echo "usage: $0 [--since REV] [--env-dir DIR]" >&2; exit 2 ;;
+        *) echo "usage: $0 [--host NAME] [--since REV] [--env-dir DIR]" >&2; exit 2 ;;
     esac
+done
+
+if [ ! -d "$repo/hosts/$host" ]; then
+    echo "no such host: $repo/hosts/$host" >&2
+    exit 2
+fi
+cd "$repo/hosts/$host"
+
+# one-time migration from the flat layout. git pull moves tracked files into
+# hosts/<host>/, but ignored runtime state (.env, data/, db/...) stays behind in
+# the old top-level directory. Renames keep running containers' bind mounts
+# intact, and podman unshare lets us move files owned by container subuids.
+for dir in */; do
+    dir=${dir%/}
+    old="$repo/$dir"
+    [ -d "$old" ] || continue
+    for entry in "$old"/* "$old"/.[!.]* "$old"/..?*; do
+        [ -e "$entry" ] || continue
+        name=$(basename "$entry")
+        if [ -e "$dir/$name" ]; then
+            echo "not migrating $entry: $dir/$name already exists" >&2
+            continue
+        fi
+        echo "migrating $entry -> hosts/$host/$dir/$name"
+        podman unshare mv "$entry" "$dir/$name"
+    done
+    podman unshare rmdir "$old" 2>/dev/null || echo "left $old behind, check it by hand" >&2
 done
 
 units_dir="${XDG_CONFIG_HOME:-$HOME/.config}/containers/systemd/spruce-infra"
@@ -48,7 +78,7 @@ done | sort -u)
 
 # anything but docs changing in a service directory gets it restarted
 if [ -n "$since" ]; then
-    for dir in $(git diff --name-only "$since" HEAD -- . ':!*.md' | cut -s -d/ -f1 | sort -u); do
+    for dir in $(git diff --relative --name-only "$since" HEAD -- . ':!*.md' | cut -s -d/ -f1 | sort -u); do
         [ -d "$dir" ] && mark "$dir"
     done
 fi

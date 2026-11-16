@@ -10,13 +10,13 @@ PublishPort=80:80
 PublishPort=81:81
 PublishPort=443:443
 Environment=TZ=America/Denver
-Volume=%h/spruce-infra/nginx-proxy-manager/data:/data:Z
-Volume=%h/spruce-infra/nginx-proxy-manager/letsencrypt:/etc/letsencrypt:Z
+Volume=%h/spruce-infra/hosts/spruce/nginx-proxy-manager/data:/data:Z
+Volume=%h/spruce-infra/hosts/spruce/nginx-proxy-manager/letsencrypt:/etc/letsencrypt:Z
 
 [Service]
 # podman won't create missing bind mount sources
-ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/nginx-proxy-manager/data
-ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/nginx-proxy-manager/letsencrypt
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/hosts/spruce/nginx-proxy-manager/data
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/hosts/spruce/nginx-proxy-manager/letsencrypt
 Restart=always
 TimeoutStartSec=900
 

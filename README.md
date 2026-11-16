@@ -1,10 +1,19 @@
 # spruce-infra
 
-Rootless Podman infrastructure definitions for the Spruce VPS.
+Rootless Podman infrastructure definitions for the Spruce VPS and pine.
 
 This repository tracks service definitions and templates, not live runtime state or secrets.
 
-## Services
+## Hosts
+
+- `hosts/spruce/` - public VPS. Runs Nginx Proxy Manager, which is the only public entry point.
+- `hosts/pine/` - tailnet-only box without port forwarding. Its public services are proxied
+  through spruce's NPM over the tailnet. See [`hosts/pine/README.md`](hosts/pine/README.md).
+
+Each host directory has a `deploy.conf` with its SSH port and user for the deploy pipeline.
+The directory name must match the host's Tailscale machine name.
+
+## Services on spruce
 
 - `nginx-proxy-manager/` - public reverse proxy and Let's Encrypt management.
 - `voidauth/` - VoidAuth SSO provider.
@@ -20,11 +29,11 @@ This repository tracks service definitions and templates, not live runtime state
 - Fedora Server
 - Rootless Podman 5 with [Quadlet](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html)
 - This repository checked out at `~/spruce-infra` for the `cypress` user. Units reference
-  files there through `%h/spruce-infra`.
+  files there through `%h/spruce-infra/hosts/<host>`.
 - Services run as the same Linux user so they can share the same rootless Podman network.
 
 Every service is a set of Quadlet units (`.container`, `.network`, `.volume`, `.build`)
-in its directory. `deploy.sh` copies them into `~/.config/containers/systemd/spruce-infra/`,
+in `hosts/<host>/<service>/`. `deploy.sh --host <host>` copies that host's units into `~/.config/containers/systemd/spruce-infra/`,
 so systemd starts them at boot, restarts them when they exit, and orders dependencies
 like VoidAuth waiting for a healthy database.
 
@@ -63,14 +72,14 @@ git clone https://tangled.org/willowidk.dev/spruce-infra ~/spruce-infra
 ```
 
 Authorize the deploy pipeline's SSH key (the public half of `OP_SSH_KEY_REF`) in
-`~/.ssh/authorized_keys`, and allow the pipeline's Tailscale tag to reach spruce on
-port 1010 (spruce's sshd port) in the tailnet policy.
+`~/.ssh/authorized_keys`, and allow the pipeline's Tailscale tag to reach the host on
+its sshd port (`SSH_PORT` in `hosts/<host>/deploy.conf`, 1010 on spruce) in the tailnet policy.
 
 ## Secrets
 
-Service secrets live in the `spruce` 1Password vault, never in this repository. Each
-service has a committed `.env.tpl` with plain values for non-secret settings and
-`{{ op://spruce/<service>/<VAR> }}` references for everything else. Item names match
+Service secrets live in a 1Password vault named after the host (`spruce`, `pine`), never
+in this repository. Each service has a committed `.env.tpl` with plain values for
+non-secret settings and `{{ op://<host>/<service>/<VAR> }}` references for everything else. Item names match
 the service directory, and field names match the variable name.
 
 Render a service's `.env` with the 1Password CLI:
@@ -85,17 +94,22 @@ for every service using a read-only 1Password service account.
 ## Deploying
 
 Pushes to `main` run [`.tangled/workflows/deploy.yml`](.tangled/workflows/deploy.yml).
-It joins the tailnet, renders every `.env.tpl` from 1Password, uploads the results to
-spruce, pulls the repository there, and runs:
+It joins the tailnet, renders every `.env.tpl` from 1Password, and for each directory in
+`hosts/` uploads that host's `.env` files, pulls the repository there, and runs:
 
 ```sh
-./deploy.sh --since <previous HEAD> --env-dir ~/.cache/spruce-infra-env
+./deploy.sh --host <host> --since <previous HEAD> --env-dir ~/.cache/spruce-infra-env
 ```
+
+A host that's unreachable or fails to deploy doesn't stop the others, but fails the run.
 
 `deploy.sh` installs changed units and `.env` files, reloads systemd, restarts services
 whose directory changed (documentation excluded), starts anything that isn't running,
-and stops services whose units were removed. Run it by hand on spruce the same way, or
-with no arguments to install units and start whatever is stopped.
+and stops services whose units were removed. Run it by hand on a host the same way, or
+with no arguments to install units for `hosts/$(hostname -s)` and start whatever is stopped.
+
+The first deploy after the move to `hosts/` migrates leftover ignored state (`.env`,
+`data/`, `db/`, ...) from the old top-level service directories into `hosts/<host>/`.
 
 Check `./validate.sh` before pushing. It runs the Quadlet generator over every unit.
 
@@ -110,7 +124,7 @@ systemctl --user restart voidauth
 Ordering is handled by the units: everything on the `npm` network waits for
 `npm-network.service`, and `voidauth` waits for `voidauth-db` to pass its healthcheck.
 
-See `calnode/README.md` for CalNode, Mailcow SMTP, backup, and update notes.
+See `hosts/spruce/calnode/README.md` for CalNode, Mailcow SMTP, backup, and update notes.
 
 ## Mirroring to GitHub
 
@@ -128,6 +142,9 @@ this mirror and should not receive independent changes. The destination must alr
 exist on GitHub.
 
 ## Nginx Proxy Manager hosts
+
+Services on pine are proxied the same way, forwarding to pine's Tailscale IP and
+published port. See [`hosts/pine/README.md`](hosts/pine/README.md).
 
 VoidAuth:
 
@@ -166,7 +183,7 @@ Forward Port: 80
 ```
 
 The public database URL is `https://panels.willowidk.dev/panels.json`; internally it is
-available as `http://panel-modeler-panels/panels.json`. See `panel-modeler/README.md`
+available as `http://panel-modeler-panels/panels.json`. See `hosts/spruce/panel-modeler/README.md`
 for the service details.
 
 CalNode booking site:
@@ -216,7 +233,8 @@ Commit templates instead, such as `.env.tpl` (1Password references only) and `ho
 
 ## Backups
 
-Git is not a backup for runtime state. Back up at least:
+Git is not a backup for runtime state. Back up at least these, under `hosts/spruce/`,
+plus whatever pine's services keep in `hosts/pine/`:
 
 - `nginx-proxy-manager/data/`
 - `nginx-proxy-manager/letsencrypt/`

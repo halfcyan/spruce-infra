@@ -9,11 +9,11 @@ AutoUpdate=registry
 ContainerName=outline
 Network=outline.network
 Network=npm.network
-EnvironmentFile=%h/spruce-infra/outline/.env
-Volume=%h/spruce-infra/outline/data:/var/lib/outline/data:Z,U
+EnvironmentFile=%h/spruce-infra/hosts/spruce/outline/.env
+Volume=%h/spruce-infra/hosts/spruce/outline/data:/var/lib/outline/data:Z,U
 
 [Service]
-ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/outline/data
+ExecStartPre=/usr/bin/mkdir -p %h/spruce-infra/hosts/spruce/outline/data
 Restart=always
 TimeoutStartSec=900
 
