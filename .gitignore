@@ -26,3 +26,7 @@
 # OS/editor noise
 .DS_Store
 *.swp
+
+# python bytecode
+__pycache__/
+*.pyc
