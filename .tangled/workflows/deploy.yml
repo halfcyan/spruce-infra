@@ -141,6 +141,10 @@ steps:
         IdentitiesOnly yes
         ProxyCommand nc -X 5 -x 127.0.0.1:1055 %h %p
         StrictHostKeyChecking accept-new
+        # fail instead of hanging on a password prompt or a dropped connection
+        BatchMode yes
+        ConnectTimeout 30
+        ServerAliveInterval 30
       EOF
         chmod 600 "$HOME/.ssh/config"
 

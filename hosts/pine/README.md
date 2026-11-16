@@ -17,7 +17,15 @@ client --https--> spruce:443 (NPM) --http over tailnet--> pine:<port> (container
 Same as spruce (see the top-level README) with these differences:
 
 - Skip the low-ports sysctl. pine never binds 80/443.
-- sshd listens on the port in `deploy.conf`. Change it there if it isn't 22.
+- sshd also listens on 1010 (`SSH_PORT` in `deploy.conf`) for the deploy pipeline.
+  Tailscale SSH is on, and it intercepts every tailnet connection to port 22, so the
+  pipeline's key would never reach sshd there:
+
+  ```sh
+  sudo semanage port -a -t ssh_port_t -p tcp 1010
+  printf 'Port 22\nPort 1010\n' | sudo tee /etc/ssh/sshd_config.d/50-deploy-port.conf
+  sudo systemctl restart sshd
+  ```
 - Let tailnet traffic through firewalld so spruce can reach published ports:
 
   ```sh
